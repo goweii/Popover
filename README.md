@@ -1,5 +1,31 @@
 # Popover
 
+Android PopupWindow 封装
+
+## 如何集成
+
+[JitPack主页](https://jitpack.io/#goweii/Popover)
+
+### 添加JitPack仓库
+
+```kotlin
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+```
+
+### 添加依赖
+
+```kotlin
+dependencies {
+        implementation("com.github.goweii:Popover:Tag")
+}
+```
+
 ## 如何使用
 
 ### 基本使用
