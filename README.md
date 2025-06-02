@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-        implementation("com.github.goweii:Popover:Tag")
+    implementation("com.github.goweii:Popover:Tag")
 }
 ```
 
