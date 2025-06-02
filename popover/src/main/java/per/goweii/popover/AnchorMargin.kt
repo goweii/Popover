@@ -1,29 +1,56 @@
 package per.goweii.popover
 
 import android.graphics.Rect
-import android.view.View
 import per.goweii.popover.Popover.Anchor
 import per.goweii.popover.Popover.Alignment
-import per.goweii.popover.Popover.AlignmentWrapper
 
-class AnchorMarginAlignmentWrapper(
-    original: Alignment,
-    private val gap: Int = 0,
-) : AlignmentWrapper(original) {
+class AnchorMargin(
+    private val alignment: Alignment,
+    private val margin: Int = 0,
+) : Alignment {
+    private val rectTemp = Rect()
+
     override fun compute(anchor: Anchor, target: Rect) {
+        rectTemp.set(target)
+
         val anchorRect = anchor.anchorRect
 
-        val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
-        if (rtl) {
-            anchorRect.left -= gap
-            anchorRect.right += gap
-        } else {
-            anchorRect.left -= gap
-            anchorRect.right += gap
-        }
-        anchorRect.top -= gap
-        anchorRect.bottom += gap
+        var dx = 0
+        var dy = 0
 
-        super.compute(anchor, target)
+        do {
+            target.set(rectTemp)
+            target.offset(dx, dy)
+
+            dx = 0
+            dy = 0
+
+            alignment.compute(anchor, target)
+
+            if (target.right <= anchorRect.left) {
+                val g = anchorRect.left - target.right
+                if (g < margin) {
+                    dx = -(margin - g)
+                }
+            } else if (target.left >= anchorRect.right) {
+                val g = target.left - anchorRect.right
+                if (g < margin) {
+                    dx = margin - g
+                }
+            }
+
+            if (target.bottom <= anchorRect.top) {
+                val g = anchorRect.top - target.bottom
+                if (g < margin) {
+                    dy = -(margin - g)
+                }
+            } else if (target.top >= anchorRect.bottom) {
+                val g = target.top - anchorRect.bottom
+                if (g < margin) {
+                    dy = margin - g
+                }
+            }
+
+        } while (dx != 0 || dy != 0)
     }
 }

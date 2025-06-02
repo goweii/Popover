@@ -16,8 +16,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
 rootProject.name = "Popover"
-include(":app")
+include(":simple")
+include(":popover")
+include(":popover-shadow")

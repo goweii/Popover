@@ -5,16 +5,20 @@ plugins {
 
 android {
     namespace = "per.goweii.popover.simple"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "per.goweii.popover.simple"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 
     buildTypes {
@@ -45,4 +49,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation(project(":popover"))
+    implementation(project(":popover-shadow"))
+
 }
