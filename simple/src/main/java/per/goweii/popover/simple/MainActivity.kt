@@ -38,19 +38,34 @@ class MainActivity : AppCompatActivity() {
                 val b = PopoverMenusBinding.inflate(layoutInflater)
                 contentView = b.root
 
+                arrowWidth = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    16F,
+                    resources.displayMetrics
+                )
+
+                arrowHeight = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    12F,
+                    resources.displayMetrics
+                )
+
+                arrowCornerRadius = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    2F,
+                    resources.displayMetrics
+                )
+
                 val padding = TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_DIP,
-                    8F,
+                    12F,
                     resources.displayMetrics
                 ).toInt()
 
 
                 alignment = WindowPadding.all(
                     alignment = AnchorMargin(
-                        alignment = RelativeAlignment(
-                            vertical = RelativeAlignment.Vertical.Bellow(),
-                            horizontal = RelativeAlignment.Horizontal.AlignEnd(),
-                        ),
+                        alignment = RelativeAlignment(),
                         margin = padding,
                     ),
                     padding = padding,

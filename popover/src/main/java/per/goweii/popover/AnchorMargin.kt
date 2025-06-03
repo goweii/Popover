@@ -1,51 +1,50 @@
 package per.goweii.popover
 
 import android.graphics.Rect
-import per.goweii.popover.Popover.Anchor
-import per.goweii.popover.Popover.Alignment
 
 class AnchorMargin(
-    private val alignment: Alignment,
+    private val alignment: Popover.Alignment,
     private val margin: Int = 0,
-) : Alignment {
+) : Popover.Alignment {
     private val rectTemp = Rect()
 
-    override fun compute(anchor: Anchor, target: Rect) {
-        rectTemp.set(target)
+    override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+        rectTemp.set(target.targetRect)
 
+        val targetRect = target.targetRect
         val anchorRect = anchor.anchorRect
 
         var dx = 0
         var dy = 0
 
         do {
-            target.set(rectTemp)
-            target.offset(dx, dy)
+            targetRect.set(rectTemp)
+            targetRect.offset(dx, dy)
 
             dx = 0
             dy = 0
 
             alignment.compute(anchor, target)
 
-            if (target.right <= anchorRect.left) {
-                val g = anchorRect.left - target.right
+            if (targetRect.right <= anchorRect.left) {
+                val g = anchorRect.left - targetRect.right
                 if (g < margin) {
                     dx = -(margin - g)
                 }
-            } else if (target.left >= anchorRect.right) {
-                val g = target.left - anchorRect.right
+            } else if (targetRect.left >= anchorRect.right) {
+                val g = targetRect.left - anchorRect.right
                 if (g < margin) {
                     dx = margin - g
                 }
             }
 
-            if (target.bottom <= anchorRect.top) {
-                val g = anchorRect.top - target.bottom
+            if (targetRect.bottom <= anchorRect.top) {
+                val g = anchorRect.top - targetRect.bottom
                 if (g < margin) {
                     dy = -(margin - g)
                 }
-            } else if (target.top >= anchorRect.bottom) {
-                val g = target.top - anchorRect.bottom
+            } else if (targetRect.top >= anchorRect.bottom) {
+                val g = targetRect.top - anchorRect.bottom
                 if (g < margin) {
                     dy = margin - g
                 }

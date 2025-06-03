@@ -44,6 +44,37 @@ binding.btnShowPopover.setOnClickListener { v ->
 }
 ```
 
+### 设置箭头
+
+箭头位置会自动计算：
+
+```kotlin
+binding.btnShowPopover.setOnClickListener { v ->
+    ShadowPopover(this).apply {
+        val binding = PopoverMenusBinding.inflate(layoutInflater)
+        contentView = binding.root
+
+        arrowWidth = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            16F,
+            resources.displayMetrics
+        )
+
+        arrowHeight = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            12F,
+            resources.displayMetrics
+        )
+
+        arrowCornerRadius = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            2F,
+            resources.displayMetrics
+        )
+    }.show(v)
+}
+```
+
 ### 手动指定对齐方式
 
 ```kotlin

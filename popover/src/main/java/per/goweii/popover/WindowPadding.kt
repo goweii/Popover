@@ -2,19 +2,17 @@ package per.goweii.popover
 
 import android.graphics.Rect
 import android.view.View
-import per.goweii.popover.Popover.Anchor
-import per.goweii.popover.Popover.Alignment
 
 class WindowPadding(
-    private val alignment: Alignment,
+    private val alignment: Popover.Alignment,
     private val paddingStart: Int = 0,
     private val paddingEnd: Int = 0,
     private val paddingTop: Int = 0,
     private val paddingBottom: Int = 0,
-) : Alignment {
+) : Popover.Alignment {
     companion object {
         fun all(
-            alignment: Alignment,
+            alignment: Popover.Alignment,
             padding: Int,
         ) = WindowPadding(
             alignment = alignment,
@@ -27,7 +25,7 @@ class WindowPadding(
 
     private val rectTemp = Rect()
 
-    override fun compute(anchor: Anchor, target: Rect) {
+    override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
         val windowRect = anchor.windowRect
 
         // save

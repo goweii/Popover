@@ -3,8 +3,6 @@ package per.goweii.popover
 import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.view.View
-import per.goweii.popover.Popover.Alignment
-import per.goweii.popover.Popover.Anchor
 
 /**
  * 按水平和垂直方向相对位置控制对齐方式
@@ -13,20 +11,23 @@ import per.goweii.popover.Popover.Anchor
 open class RelativeAlignment(
     private val vertical: Vertical = Vertical.BellowOrAbove(),
     private val horizontal: Horizontal = Horizontal.AlignStartOrEnd(),
-) : Alignment {
-    sealed class Vertical : Alignment {
+) : Popover.Alignment {
+    sealed class Vertical : Popover.Alignment {
         data class Above(
             private val spacingToAnchor: Int = 0,
             private val laidOutInWindow: Boolean = true
         ) : Vertical() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(0, -(target.height() + anchor.height))
-                target.offset(0, -spacingToAnchor)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(0, -(target.targetRect.height() + anchor.height))
+                target.targetRect.offset(0, -spacingToAnchor)
                 if (laidOutInWindow) {
-                    if (target.bottom > anchor.windowRect.bottom) {
-                        target.offset(0, anchor.windowRect.bottom - target.bottom)
+                    if (target.targetRect.bottom > anchor.windowRect.bottom) {
+                        target.targetRect.offset(
+                            0,
+                            anchor.windowRect.bottom - target.targetRect.bottom
+                        )
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -34,13 +35,13 @@ open class RelativeAlignment(
         data class AlignTop(
             private val laidOutInWindow: Boolean = true
         ) : Vertical() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(0, -anchor.height)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(0, -anchor.height)
                 if (laidOutInWindow) {
-                    if (target.top < anchor.windowRect.top) {
-                        target.offset(0, anchor.windowRect.top - target.top)
+                    if (target.targetRect.top < anchor.windowRect.top) {
+                        target.targetRect.offset(0, anchor.windowRect.top - target.targetRect.top)
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -48,10 +49,10 @@ open class RelativeAlignment(
         data class Center(
             private val laidOutInWindow: Boolean = true
         ) : Vertical() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(0, -(target.height() / 2 + anchor.height / 2))
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(0, -(target.targetRect.height() / 2 + anchor.height / 2))
                 if (laidOutInWindow) {
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -59,13 +60,16 @@ open class RelativeAlignment(
         data class AlignBottom(
             private val laidOutInWindow: Boolean = true
         ) : Vertical() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(0, -target.height())
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(0, -target.targetRect.height())
                 if (laidOutInWindow) {
-                    if (target.bottom > anchor.windowRect.bottom) {
-                        target.offset(0, anchor.windowRect.bottom - target.bottom)
+                    if (target.targetRect.bottom > anchor.windowRect.bottom) {
+                        target.targetRect.offset(
+                            0,
+                            anchor.windowRect.bottom - target.targetRect.bottom
+                        )
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -74,13 +78,13 @@ open class RelativeAlignment(
             private val spacingToAnchor: Int = 0,
             private val laidOutInWindow: Boolean = true
         ) : Vertical() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(0, spacingToAnchor)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(0, spacingToAnchor)
                 if (laidOutInWindow) {
-                    if (target.top < anchor.windowRect.top) {
-                        target.offset(0, anchor.windowRect.top - target.top)
+                    if (target.targetRect.top < anchor.windowRect.top) {
+                        target.targetRect.offset(0, anchor.windowRect.top - target.targetRect.top)
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -98,12 +102,12 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val remaining = anchor.remaining
-                if (remaining.bottom >= target.height()) {
+                if (remaining.bottom >= target.targetRect.height()) {
                     bellow.compute(anchor, target)
                 } else {
-                    if (remaining.top >= target.height()) {
+                    if (remaining.top >= target.targetRect.height()) {
                         above.compute(anchor, target)
                     } else {
                         if (remaining.bottom >= remaining.top) {
@@ -117,19 +121,22 @@ open class RelativeAlignment(
         }
     }
 
-    sealed class Horizontal : Alignment {
+    sealed class Horizontal : Popover.Alignment {
         data class ToLeft(
             private val spacingToAnchor: Int = 0,
             private val laidOutInWindow: Boolean = true
         ) : Horizontal() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(-target.width(), 0)
-                target.offset(-spacingToAnchor, 0)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(-target.targetRect.width(), 0)
+                target.targetRect.offset(-spacingToAnchor, 0)
                 if (laidOutInWindow) {
-                    if (target.right > anchor.windowRect.right) {
-                        target.offset(anchor.windowRect.right - target.right, 0)
+                    if (target.targetRect.right > anchor.windowRect.right) {
+                        target.targetRect.offset(
+                            anchor.windowRect.right - target.targetRect.right,
+                            0
+                        )
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -137,12 +144,12 @@ open class RelativeAlignment(
         data class AlignLeft(
             private val laidOutInWindow: Boolean = true
         ) : Horizontal() {
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 if (laidOutInWindow) {
-                    if (target.left < anchor.windowRect.left) {
-                        target.offset(anchor.windowRect.left - target.left, 0)
+                    if (target.targetRect.left < anchor.windowRect.left) {
+                        target.targetRect.offset(anchor.windowRect.left - target.targetRect.left, 0)
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -150,10 +157,10 @@ open class RelativeAlignment(
         data class Center(
             private val laidOutInWindow: Boolean = true
         ) : Horizontal() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(-(target.width() / 2 - anchor.width / 2), 0)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(-(target.targetRect.width() / 2 - anchor.width / 2), 0)
                 if (laidOutInWindow) {
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -161,13 +168,16 @@ open class RelativeAlignment(
         data class AlignRight(
             private val laidOutInWindow: Boolean = true
         ) : Horizontal() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(-(target.width() - anchor.width), 0)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(-(target.targetRect.width() - anchor.width), 0)
                 if (laidOutInWindow) {
-                    if (target.right > anchor.windowRect.right) {
-                        target.offset(anchor.windowRect.right - target.right, 0)
+                    if (target.targetRect.right > anchor.windowRect.right) {
+                        target.targetRect.offset(
+                            anchor.windowRect.right - target.targetRect.right,
+                            0
+                        )
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -176,14 +186,14 @@ open class RelativeAlignment(
             private val spacingToAnchor: Int = 0,
             private val laidOutInWindow: Boolean = true
         ) : Horizontal() {
-            override fun compute(anchor: Anchor, target: Rect) {
-                target.offset(anchor.width, 0)
-                target.offset(spacingToAnchor, 0)
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+                target.targetRect.offset(anchor.width, 0)
+                target.targetRect.offset(spacingToAnchor, 0)
                 if (laidOutInWindow) {
-                    if (target.left < anchor.windowRect.left) {
-                        target.offset(anchor.windowRect.left - target.left, 0)
+                    if (target.targetRect.left < anchor.windowRect.left) {
+                        target.targetRect.offset(anchor.windowRect.left - target.targetRect.left, 0)
                     }
-                    target.intersect(anchor.windowRect)
+                    target.targetRect.intersect(anchor.windowRect)
                 }
             }
         }
@@ -201,7 +211,7 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 if (rtl) {
                     toRight.compute(anchor, target)
@@ -222,7 +232,7 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 if (rtl) {
                     alignRight.compute(anchor, target)
@@ -242,7 +252,7 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 if (!rtl) {
                     alignRight.compute(anchor, target)
@@ -265,7 +275,7 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 if (rtl) {
                     toLeft.compute(anchor, target)
@@ -285,7 +295,7 @@ open class RelativeAlignment(
                 laidOutInWindow = laidOutInWindow,
             )
 
-            override fun compute(anchor: Anchor, target: Rect) {
+            override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
                 val rtl = anchor.view.layoutDirection == View.LAYOUT_DIRECTION_RTL
                 val remaining = anchor.remaining
                 val startEdge = if (rtl) {
@@ -300,9 +310,9 @@ open class RelativeAlignment(
                 }
 
                 if (rtl) {
-                    if (startEdge >= target.width()) {
+                    if (startEdge >= target.targetRect.width()) {
                         alignEnd.compute(anchor, target)
-                    } else if (endEdge >= target.width()) {
+                    } else if (endEdge >= target.targetRect.width()) {
                         alignStart.compute(anchor, target)
                     } else {
                         if (startEdge >= endEdge) {
@@ -312,9 +322,9 @@ open class RelativeAlignment(
                         }
                     }
                 } else {
-                    if (endEdge >= target.width()) {
+                    if (endEdge >= target.targetRect.width()) {
                         alignStart.compute(anchor, target)
-                    } else if (startEdge >= target.width()) {
+                    } else if (startEdge >= target.targetRect.width()) {
                         alignEnd.compute(anchor, target)
                     } else {
                         if (endEdge >= startEdge) {
@@ -328,23 +338,23 @@ open class RelativeAlignment(
         }
     }
 
-    override fun compute(anchor: Anchor, target: Rect) {
-        val l = target.left
-        val r = target.right
-        val t = target.top
-        val b = target.bottom
+    override fun compute(anchor: Popover.Anchor, target: Popover.Target) {
+        val l = target.targetRect.left
+        val r = target.targetRect.right
+        val t = target.targetRect.top
+        val b = target.targetRect.bottom
 
         horizontal.compute(anchor, target)
-        val nl = target.left
-        val nr = target.right
+        val nl = target.targetRect.left
+        val nr = target.targetRect.right
 
-        target.set(l, t, r, b)
+        target.targetRect.set(l, t, r, b)
 
         vertical.compute(anchor, target)
-        val nt = target.top
-        val nb = target.bottom
+        val nt = target.targetRect.top
+        val nb = target.targetRect.bottom
 
-        target.set(nl, nt, nr, nb)
-        target.intersect(anchor.windowRect)
+        target.targetRect.set(nl, nt, nr, nb)
+        target.targetRect.intersect(anchor.windowRect)
     }
 }

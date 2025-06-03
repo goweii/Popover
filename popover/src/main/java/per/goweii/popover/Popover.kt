@@ -45,14 +45,15 @@ class Popover(context: Context) {
 
     private val anchor: Anchor? get() = anchorRef?.get()
 
-    private val rectTemp = Rect()
+    private var target: Target? = null
 
     val isShowing: Boolean
         get() = popupWindow.isShowing
 
     var contentView: View?
-        get() = popupWindow.contentView
+        get() = target?.view
         set(value) {
+            target = value?.let { Target(it) }
             popupWindow.contentView = value
             if (isShowing) {
                 update()
@@ -80,12 +81,14 @@ class Popover(context: Context) {
 
     @SuppressLint("RtlHardcoded")
     fun show(anchorView: View) {
-        val contentView = contentView ?: return
+        val target = target ?: return
         val anchor = attachAnchor(anchorView)
 
-        val targetRect = computeTargetRect(anchor, contentView)
+        computeTarget(anchor, target)
 
-        popupWindow.animationStyle = computeDefaultAnimationStyle(anchor, targetRect)
+        popupWindow.animationStyle = computeDefaultAnimationStyle(anchor, target)
+
+        val targetRect = target.targetRect
 
         popupWindow.width = targetRect.width()
         popupWindow.height = targetRect.height()
@@ -102,23 +105,19 @@ class Popover(context: Context) {
     }
 
     fun update() {
-        val contentView = contentView ?: return
+        val target = target ?: return
         val anchor = anchor ?: return
 
-        val targetRect = computeTargetRect(anchor, contentView)
+        computeTarget(anchor, target)
 
-        if (targetRect.isEmpty) {
-            return
-        }
-
-        popupWindow.animationStyle = computeDefaultAnimationStyle(anchor, targetRect)
+        popupWindow.animationStyle = computeDefaultAnimationStyle(anchor, target)
 
         popupWindow.update(
             anchor.view,
-            targetRect.left,
-            targetRect.top,
-            targetRect.width(),
-            targetRect.height()
+            target.targetRect.left,
+            target.targetRect.top,
+            target.targetRect.width(),
+            target.targetRect.height()
         )
     }
 
@@ -139,55 +138,54 @@ class Popover(context: Context) {
     }
 
     @SuppressLint("CheckResult")
-    private fun computeTargetRect(anchor: Anchor, contentView: View): Rect {
-        val targetRect = rectTemp
-        targetRect.setEmpty()
-
-        val alignment = alignment
-
-        val windowRect = anchor.windowRect
-        val anchorRect = anchor.anchorRect
-
-        val suggestWidth = windowRect.width()
-        val suggestHeight = windowRect.height()
-
-        // do {
-        preMeasure(contentView, suggestWidth, suggestHeight)
-        val measuredWidth = contentView.measuredWidth
-        val measuredHeight = contentView.measuredHeight
-        targetRect.set(0, 0, measuredWidth, measuredHeight)
-        targetRect.offset(anchorRect.left, anchorRect.bottom)
-        alignment.compute(anchor, targetRect)
-        // targetRect.intersect(windowRect)
-        //     suggestWidth = targetRect.width()
-        //     suggestHeight = targetRect.height()
-        //     val changed = suggestWidth != measuredWidth || suggestHeight != measuredHeight
-        // } while (changed)
-
-        return targetRect
+    private fun computeTarget(anchor: Anchor, target: Target) {
+        target.targetRect.setEmpty()
+        do {
+            val suggestWidth = anchor.windowRect.width()
+            val suggestHeight = anchor.windowRect.height()
+            target.preMeasure(suggestWidth, suggestHeight)
+            val measuredWidth = target.measuredWidth
+            val measuredHeight = target.measuredHeight
+            target.targetRect.set(0, 0, measuredWidth, measuredHeight)
+            target.targetRect.offset(anchor.anchorRect.left, anchor.anchorRect.bottom)
+            alignment.compute(anchor, target)
+        } while (target.isMeasureRequested)
     }
 
-    /**
-     * 预测量
-     */
-    private fun preMeasure(contentView: View, parentWidth: Int, parentHeight: Int) {
-        val wSpec = MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.AT_MOST)
-        val hSpec = MeasureSpec.makeMeasureSpec(parentHeight, MeasureSpec.AT_MOST)
-        contentView.measure(wSpec, hSpec)
-    }
-
-    private fun computeDefaultAnimationStyle(
-        anchor: Anchor,
-        target: Rect,
-    ): Int {
+    private fun computeDefaultAnimationStyle(anchor: Anchor, target: Target): Int {
         val anchorRect = anchor.anchorRect
+        val targetRect = target.targetRect
 
-        return if (target.centerY() > anchorRect.centerY()) {
+        return if (targetRect.centerY() > anchorRect.centerY()) {
             R.style.Popover_Animation_DropDownDown
-        } else if (target.centerY() < anchorRect.centerY()) {
+        } else if (targetRect.centerY() < anchorRect.centerY()) {
             R.style.Popover_Animation_DropDownUp
         } else {
             R.style.Popover_Animation_Fade
+        }
+    }
+
+    class Target(val view: View) {
+        private val targetRectTemp = Rect()
+
+        private var needMeasure: Boolean = true
+
+        val targetRect: Rect get() = targetRectTemp
+
+        val measuredWidth: Int get() = view.measuredWidth
+        val measuredHeight: Int get() = view.measuredHeight
+
+        val isMeasureRequested: Boolean get() = needMeasure
+
+        fun markNeedMeasure() {
+            needMeasure = true
+        }
+
+        fun preMeasure(parentWidth: Int, parentHeight: Int) {
+            val wSpec = MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.AT_MOST)
+            val hSpec = MeasureSpec.makeMeasureSpec(parentHeight, MeasureSpec.AT_MOST)
+            view.measure(wSpec, hSpec)
+            needMeasure = false
         }
     }
 
@@ -254,8 +252,8 @@ class Popover(context: Context) {
          * 通过控制 offset 实现相对于 anchor 的对齐方式
          *
          * @param anchor 锚点
-         * @param target 目标位置
+         * @param target 目标
          */
-        fun compute(anchor: Anchor, target: Rect)
+        fun compute(anchor: Anchor, target: Target)
     }
 }
