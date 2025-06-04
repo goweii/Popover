@@ -4,8 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.view.View
+import android.widget.PopupWindow
+import androidx.appcompat.widget.ThemeUtils
+import androidx.appcompat.widget.TintTypedArray
+import androidx.core.content.ContextCompat
 import per.goweii.popover.Popover
 import per.goweii.popupshadowlayout.PopupShadowLayout
 import per.goweii.popupshadowlayout.PopupShadowLayout.PopupShadowOutlineProvider
@@ -15,6 +20,8 @@ class ShadowPopover(context: Context) {
 
     private val container = PopupShadowLayout(context)
 
+    val window: PopupWindow get() = popover.window
+
     var roundedCornerRadius: Float = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP,
         12F,
@@ -22,7 +29,7 @@ class ShadowPopover(context: Context) {
     )
         set(value) {
             field = value
-            container.setCornerRadius(value.toInt().coerceAtLeast(0))
+            container.cornerRadius = value.toInt().coerceAtLeast(0)
             if (popover.isShowing) {
                 popover.update()
             }
@@ -43,7 +50,7 @@ class ShadowPopover(context: Context) {
     var arrowWidth: Float = 0F
         set(value) {
             field = value
-            container.setArrowWidth(field.toInt().coerceAtLeast(0))
+            container.arrowWidth = field.toInt().coerceAtLeast(0)
             if (popover.isShowing) {
                 popover.update()
             }
@@ -52,7 +59,7 @@ class ShadowPopover(context: Context) {
     var arrowHeight: Float = 0F
         set(value) {
             field = value
-            container.setArrowHeight(field.toInt().coerceAtLeast(0))
+            container.arrowHeight = field.toInt().coerceAtLeast(0)
             if (popover.isShowing) {
                 popover.update()
             }
@@ -61,7 +68,7 @@ class ShadowPopover(context: Context) {
     var arrowCornerRadius: Float = 0F
         set(value) {
             field = value
-            container.setArrowRadius(field.toInt().coerceAtLeast(0))
+            container.arrowRadius = field.toInt().coerceAtLeast(0)
             if (popover.isShowing) {
                 popover.update()
             }
@@ -92,16 +99,28 @@ class ShadowPopover(context: Context) {
             popover.alignment = ShadowAlignment(value)
         }
 
+    var background: Drawable?
+        get() = container.background
+        set(value) {
+            container.background = value
+        }
+
     val isShowing: Boolean
         get() = popover.isShowing
 
     init {
-        container.setBackgroundColor(Color.WHITE)
+        try {
+            val colorBackground = context.theme
+                .obtainStyledAttributes(intArrayOf(android.R.attr.popupBackground))
+                .use { it.getColor(0, Color.WHITE) }
+            container.setBackgroundColor(colorBackground)
+        } catch (ignore: Throwable) {
+        }
         container.shadowRadius = shadowRadius.coerceAtLeast(0F)
-        container.setCornerRadius(roundedCornerRadius.toInt().coerceAtLeast(0))
-        container.setArrowWidth(arrowWidth.toInt().coerceAtLeast(0))
-        container.setArrowHeight(arrowHeight.toInt().coerceAtLeast(0))
-        container.setArrowRadius(arrowCornerRadius.toInt().coerceAtLeast(0))
+        container.cornerRadius = roundedCornerRadius.toInt().coerceAtLeast(0)
+        container.arrowWidth = arrowWidth.toInt().coerceAtLeast(0)
+        container.arrowHeight = arrowHeight.toInt().coerceAtLeast(0)
+        container.arrowRadius = arrowCornerRadius.toInt().coerceAtLeast(0)
 
         popover.contentView = container
 
@@ -134,11 +153,6 @@ class ShadowPopover(context: Context) {
             var oldShadowRight: Int
             var oldShadowBottom: Int
 
-            var arrowSide = PopupShadowOutlineProvider::class.java
-                .getDeclaredField("mArrowSide")
-                .also { it.isAccessible = true }
-                .getInt(container.shadowOutlineProvider)
-
             do {
                 oldShadowLeft = container.shadowInsets.left.toInt()
                 oldShadowTop = container.shadowInsets.top.toInt()
@@ -168,24 +182,23 @@ class ShadowPopover(context: Context) {
                     }
                 }
 
-                if (newArrowSide != arrowSide) {
-                    arrowSide = newArrowSide
-                    container.setArrowSide(arrowSide)
+                if (newArrowSide != container.arrowSide) {
+                    container.arrowSide = newArrowSide
                     target.markNeedMeasure()
                 }
 
-                container.setArrowAlign(PopupShadowOutlineProvider.ARROW_ALIGN_CENTER)
-                when (arrowSide) {
+                container.arrowAlign = PopupShadowOutlineProvider.ARROW_ALIGN_CENTER
+                when (newArrowSide) {
                     PopupShadowOutlineProvider.ARROW_SIDE_TOP,
                     PopupShadowOutlineProvider.ARROW_SIDE_BOTTOM,
                         -> {
-                        container.setArrowOffset(anchorRect.centerX() - target.targetRect.centerX())
+                        container.arrowOffset = anchorRect.centerX() - target.targetRect.centerX()
                     }
 
                     PopupShadowOutlineProvider.ARROW_SIDE_LEFT,
                     PopupShadowOutlineProvider.ARROW_SIDE_RIGHT,
                         -> {
-                        container.setArrowOffset(anchorRect.centerY() - target.targetRect.centerY())
+                        container.arrowOffset = anchorRect.centerY() - target.targetRect.centerY()
                     }
                 }
 

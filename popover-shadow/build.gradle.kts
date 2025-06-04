@@ -33,7 +33,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -44,5 +43,4 @@ dependencies {
     implementation(libs.goweii.shadowlayout)
 
     api(project(":popover"))
-
 }

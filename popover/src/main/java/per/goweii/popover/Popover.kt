@@ -8,6 +8,7 @@ import android.view.Choreographer
 import android.view.Gravity
 import android.view.View
 import android.view.View.MeasureSpec
+import android.view.WindowManager
 import android.widget.PopupWindow
 import java.lang.ref.WeakReference
 
@@ -46,6 +47,8 @@ class Popover(context: Context) {
     private val anchor: Anchor? get() = anchorRef?.get()
 
     private var target: Target? = null
+
+    val window: PopupWindow get() = popupWindow
 
     val isShowing: Boolean
         get() = popupWindow.isShowing
