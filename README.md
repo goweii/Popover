@@ -20,6 +20,8 @@ dependencyResolutionManagement {
 
 ### 添加依赖
 
+[![](https://jitpack.io/v/goweii/Popover.svg)](https://jitpack.io/#goweii/Popover)
+
 ```kotlin
 dependencies {
     implementation("com.github.goweii:Popover:Tag")
